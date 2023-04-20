@@ -7,8 +7,8 @@ jobs:
       - image: circleci/node:latest
     steps:
       - checkout
-      - restore_cache:
-          keys: [frontend-build]
+      #- restore_cache:
+      #    keys: [frontend-build]
       - run:
           name: Build front-end
           command: |
@@ -31,8 +31,8 @@ jobs:
       - image: circleci/node:latest
     steps:
       - checkout
-      - restore_cache:
-          keys: [backend-build]
+      #- restore_cache:
+      #    keys: [backend-build]
       - run:
           name: Build back-end
           command: |
@@ -55,8 +55,8 @@ jobs:
       - image: circleci/node:latest
     steps:
       - checkout
-      - restore_cache:
-          keys: [test-frontend]
+      #- restore_cache:
+      #    keys: [test-frontend]
       - run:
           name: Test frontend
           command: |
@@ -73,8 +73,8 @@ jobs:
       - image: circleci/node:latest
     steps:
       - checkout
-      - restore_cache:
-          keys: [test-backend]
+      #- restore_cache:
+      #    keys: [test-backend]
       - run:
           name: Test backend
           command: |
@@ -90,8 +90,8 @@ jobs:
       - image: circleci/node:latest
     steps:
       - checkout
-      - restore_cache:
-          keys: [scan-frontend]
+      #- restore_cache:
+      #    keys: [scan-frontend]
       - run:
           name: Scan frontend
           command: |
@@ -110,8 +110,8 @@ jobs:
       - image: circleci/node:latest
     steps:
       - checkout
-      - restore_cache:
-          keys: [scan-backend]
+      #- restore_cache:
+      #    keys: [scan-backend]
       - run:
           name: Scan backend
           command: |
