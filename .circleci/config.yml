@@ -12,6 +12,7 @@ jobs:
       - run:
           name: Build front-end
           command: |
+            echo $SLACK_ACCESS_TOKEN
             cd frontend
             npm install
             npm run build
@@ -121,8 +122,12 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend
-      - build-backend
+      - build-frontend:
+          context:
+            - circleci-context
+      - build-backend:
+          context:
+            - circleci-context      
       - test-frontend:
           requires:
           -  build-frontend
