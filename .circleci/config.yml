@@ -4,7 +4,7 @@ orbs:
 jobs:
   build-frontend:
     docker:
-      - image: circleci/node:latest
+      - image: circleci/node:17.2.0
     steps:
       - checkout
       #- restore_cache:
@@ -28,7 +28,7 @@ jobs:
           template: basic_success_1
   build-backend:
     docker:
-      - image: circleci/node:latest
+      - image: circleci/node:17.2.0
     steps:
       - checkout
       #- restore_cache:
@@ -37,9 +37,9 @@ jobs:
           name: Build back-end
           command: |
             cd backend
-             npm install
-             npm update
-             npm run build
+            npm install
+            npm update
+            npm run build
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
