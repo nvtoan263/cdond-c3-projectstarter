@@ -7,13 +7,10 @@ executors:
     docker:
       - image: circleci/node:latest
 orbs:
-  slack: circleci/slack@4.12.1
-defaults: &defaults
-  context: circleci-context  
+  slack: circleci/slack@4.12.1  
 jobs:
   build-frontend:
     executor: build-executor
-    <<: *defaults
     steps:
       - checkout
       - restore_cache:
@@ -35,7 +32,6 @@ jobs:
             - output.txt
   build-backend:
     executor: build-executor
-    <<: *defaults
     steps:
       - checkout
       - restore_cache:
@@ -51,7 +47,6 @@ jobs:
           key: backend-build
   test-frontend:
     executor: build-executor
-    <<: *defaults
     steps:
       - checkout
       - restore_cache:
@@ -68,7 +63,6 @@ jobs:
                 
   test-backend:
     executor: build-executor
-    <<: *defaults
     steps:
       - checkout
       - restore_cache:
@@ -84,7 +78,6 @@ jobs:
           key: test-backend
   scan-frontend:
     executor: build-executor
-    <<: *defaults
     steps:
       - checkout
       - restore_cache:
@@ -101,7 +94,6 @@ jobs:
           key: scan-frontend     
   scan-backend:
     executor: build-executor
-    <<: *defaults
     steps:
       - checkout
       - restore_cache:
@@ -111,8 +103,6 @@ jobs:
           command: |
             cd backend
             npm install
-            cd frontend
-            npm install
             npm audit fix --audit-level=critical --force
             npm audit --audit-level=critical
       - save_cache:
@@ -120,7 +110,6 @@ jobs:
           key: scan-backend
   notify:
     executor: slack-executor
-    <<: *defaults
     steps:
       - attach_workspace:
           at: /tmp/frontend-workspace
@@ -158,5 +147,6 @@ workflows:
           requires:
           -  build-backend
       - notify:
+          context: circleci-context
           requires:
           -  build-frontend
