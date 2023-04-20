@@ -3,29 +3,39 @@ executors:
   build-executor:
     docker:
       - image: circleci/node:13.8.0
-  scan-executor:
+  slack-executor:
     docker:
       - image: circleci/node:latest
 orbs:
   slack: circleci/slack@4.12.1
+defaults: &defaults
+  context: circleci-context  
 jobs:
   build-frontend:
     executor: build-executor
+    <<: *defaults
     steps:
       - checkout
       - restore_cache:
           keys: [frontend-build]
+      - run: mkdir -p /tmp/frontend-workspace
       - run:
           name: Build front-end
           command: |
             cd frontend
             npm install
             npm run build
+      - run: echo "frontend-build-completed" > /tmp/frontend-workspace/output.txt
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
+      - persist_to_workspace:
+          root:  /tmp/frontend-workspace
+          paths:
+            - output.txt
   build-backend:
     executor: build-executor
+    <<: *defaults
     steps:
       - checkout
       - restore_cache:
@@ -41,6 +51,7 @@ jobs:
           key: backend-build
   test-frontend:
     executor: build-executor
+    <<: *defaults
     steps:
       - checkout
       - restore_cache:
@@ -57,6 +68,7 @@ jobs:
                 
   test-backend:
     executor: build-executor
+    <<: *defaults
     steps:
       - checkout
       - restore_cache:
@@ -71,7 +83,8 @@ jobs:
           paths: [backend/node_modules]
           key: test-backend
   scan-frontend:
-    executor: scan-executor
+    executor: build-executor
+    <<: *defaults
     steps:
       - checkout
       - restore_cache:
@@ -81,22 +94,14 @@ jobs:
           command: |
             cd frontend
             npm install
-            npm audit fix
-            npm audit fix --force
-#            npm audit fix --audit-level=critical --force
-#            npm audit --audit-level=critical
+            npm audit fix --audit-level=critical --force
+            npm audit --audit-level=critical
       - save_cache:
           paths: [frontend/node_modules]
-          key: scan-frontend
-      - slack/notify:
-          event: fail
-          mentions: '@EngineeringTeam'
-          template: basic_fail_1
-      - slack/notify:
-          event: pass
-          template: basic_success_1      
+          key: scan-frontend     
   scan-backend:
-    executor: scan-executor
+    executor: build-executor
+    <<: *defaults
     steps:
       - checkout
       - restore_cache:
@@ -106,46 +111,52 @@ jobs:
           command: |
             cd backend
             npm install
-            npm audit fix
-            npm audit fix --force
-#            npm audit fix --audit-level=critical --force
-#            npm audit --audit-level=critical
+            cd frontend
+            npm install
+            npm audit fix --audit-level=critical --force
+            npm audit --audit-level=critical
       - save_cache:
           paths: [backend/node_modules]
           key: scan-backend
+  notify:
+    executor: slack-executor
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: /tmp/frontend-workspace
+          paths:
+            - output.txt
+      - run: |
+          if [[ $(cat /tmp/frontend-workspace/output.txt) == "frontend-build-completed" ]]; then
+            echo "frontend-build successfully";
+          else
+            cat /tmp/cicd-workspace/output.txt 
+            echo "frontend-build failed"; exit 1
+          fi
       - slack/notify:
           event: fail
           mentions: '@EngineeringTeam'
           template: basic_fail_1
       - slack/notify:
           event: pass
-          template: basic_success_1                
+          template: basic_success_1          
 workflows:
   default:
     jobs:
-      - build-frontend:
-          context:
-            - circleci-context
-      - build-backend:
-          context:
-            - circleci-context      
-      - test-frontend:
-          context:
-            - circleci-context      
+      - build-frontend
+      - build-backend     
+      - test-frontend:    
           requires:
           -  build-frontend
-      - test-backend:
-          context:
-            - circleci-context      
+      - test-backend:  
           requires:
           -  build-backend
-      - scan-frontend:
-          context:
-            - circleci-context      
+      - scan-frontend:     
           requires:
           -  build-frontend
-      - scan-backend:
-          context:
-            - circleci-context      
+      - scan-backend:  
           requires:
-          -  build-backend            
+          -  build-backend
+      - notify:
+          requires:
+          -  build-frontend
