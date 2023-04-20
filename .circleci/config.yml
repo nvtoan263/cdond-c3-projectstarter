@@ -1,14 +1,14 @@
 version: 2.1
 orbs:
-  slack: circleci/slack@4.1
+  slack: circleci/slack@4.12.1
 jobs:
   build-frontend:
     docker:
-      - image: circleci/node:17.2.0
+      - image: circleci/node:13.8.0
     steps:
       - checkout
-      #- restore_cache:
-      #    keys: [frontend-build]
+      - restore_cache:
+          keys: [frontend-build]
       - run:
           name: Build front-end
           command: |
@@ -28,11 +28,11 @@ jobs:
           template: basic_success_1
   build-backend:
     docker:
-      - image: circleci/node:17.2.0
+      - image: circleci/node:13.8.0
     steps:
       - checkout
-      #- restore_cache:
-      #    keys: [backend-build]
+      - restore_cache:
+          keys: [backend-build]
       - run:
           name: Build back-end
           command: |
@@ -52,11 +52,11 @@ jobs:
           template: basic_success_1
   test-frontend:
     docker:
-      - image: circleci/node:latest
+      - image: circleci/node:13.8.0
     steps:
       - checkout
-      #- restore_cache:
-      #    keys: [test-frontend]
+      - restore_cache:
+          keys: [test-frontend]
       - run:
           name: Test frontend
           command: |
@@ -70,11 +70,11 @@ jobs:
                 
   test-backend:
     docker:
-      - image: circleci/node:latest
+      - image: circleci/node:13.8.0
     steps:
       - checkout
-      #- restore_cache:
-      #    keys: [test-backend]
+      - restore_cache:
+          keys: [test-backend]
       - run:
           name: Test backend
           command: |
@@ -87,11 +87,11 @@ jobs:
           key: test-backend
   scan-frontend:
     docker:
-      - image: circleci/node:latest
+      - image: circleci/node:13.8.0
     steps:
       - checkout
-      #- restore_cache:
-      #    keys: [scan-frontend]
+      - restore_cache:
+          keys: [scan-frontend]
       - run:
           name: Scan frontend
           command: |
@@ -107,11 +107,11 @@ jobs:
 
   scan-backend:
     docker:
-      - image: circleci/node:latest
+      - image: circleci/node:13.8.0
     steps:
       - checkout
-      #- restore_cache:
-      #    keys: [scan-backend]
+      - restore_cache:
+          keys: [scan-backend]
       - run:
           name: Scan backend
           command: |
