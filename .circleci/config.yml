@@ -12,9 +12,9 @@ jobs:
       - run:
           name: Build front-end
           command: |
-            echo $SLACK_ACCESS_TOKEN
             cd frontend
             npm install
+            npm update
             npm run build
       - save_cache:
           paths: [frontend/node_modules]
@@ -38,6 +38,7 @@ jobs:
           command: |
             cd backend
              npm install
+             npm update
              npm run build
       - save_cache:
           paths: [backend/node_modules]
@@ -61,6 +62,7 @@ jobs:
           command: |
             cd frontend
             npm install
+            npm update
             npm run test
       - save_cache:
           paths: [frontend/node_modules]
@@ -78,6 +80,7 @@ jobs:
           command: |
             cd backend
             npm install
+            npm update
             npm run test
       - save_cache:
           paths: [backend/node_modules]
@@ -94,6 +97,7 @@ jobs:
           command: |
             cd frontend
             npm install
+            npm update
             npm audit fix
             npm audit fix --audit-level=critical --force
             npm audit --audit-level=critical
@@ -113,6 +117,7 @@ jobs:
           command: |
             cd backend
             npm install
+            npm update
             npm audit fix
             npm audit fix --audit-level=critical --force
             npm audit --audit-level=critical
