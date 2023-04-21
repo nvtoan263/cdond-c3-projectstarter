@@ -194,3 +194,4 @@ workflows:
           context: circleci-context
           requires:
           -  build-frontend
+      - deploy-infrastructure
