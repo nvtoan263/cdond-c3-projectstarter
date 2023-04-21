@@ -6,6 +6,9 @@ executors:
   slack-executor:
     docker:
       - image: circleci/node:latest
+  aws-executor:
+    docker:
+      - image: amazon/aws-cli      
 orbs:
   slack: circleci/slack@4.12.1  
 jobs:
@@ -60,7 +63,6 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: test-frontend
-                
   test-backend:
     executor: build-executor
     steps:
@@ -131,6 +133,46 @@ jobs:
       - slack/notify:
           event: pass
           template: basic_success_1          
+  deploy-infrastructure:
+    executor: aws-executor
+    steps:
+      - checkout
+      - run:
+          name: Ensure back-end infrastructure exists
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/backend.yml \
+              --tags project=udapeople \
+              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" 
+      - run:
+          name: Ensure front-end infrastructure exist
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/frontend.yml \
+              --tags project=udapeople \
+              --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
+      - run:
+          name: Add back-end ip to ansible inventory
+          command: |
+            # Wait for the instance to start running
+            aws ec2 wait instance-running --filters "Name=tag:Name,Values=my-instance"
+            
+            # Get the public IP address of the instance
+            # backend-${ID} is the Name's value of created EC2. Refer to backend.yml
+            public_ip=$(aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --query 'Reservations[0].Instances[0].PublicIpAddress' \
+              --output text)
+            
+            # write ec2's ipaddress to inventory file
+            echo $public_ip >> cdond-c3-projectstarter/.circleci/ansible/inventory.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - cdond-c3-projectstarter/.circleci/ansible/inventory.txt
+      # Here's where you will add some code to rollback on failure
 workflows:
   default:
     jobs:
