@@ -28,8 +28,8 @@ Resources:
       InstanceType: t2.micro
       SecurityGroups:
         - Ref: InstanceSecurityGroup
-      KeyName: VocareumKey2-before-fixing
-      ImageId: ami-007855ac798b5175e-before-fixing
+      KeyName: VocareumKey2
+      ImageId: ami-007855ac798b5175e
       Tags:
         - Key: Name
           Value: !Sub backend-${ID}

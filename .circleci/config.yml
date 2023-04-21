@@ -9,6 +9,14 @@ executors:
   aws-executor:
     docker:
       - image: amazon/aws-cli      
+commands:
+  install-dependencies:
+    description: "Install some of necessary dependency for amazon/aws-cli image"
+    steps:
+      - run: yum install -y jq
+      - run: yum install -y tar
+      - run: yum install -y gzip
+      - run: yum update -y awscli
 orbs:
   slack: circleci/slack@4.12.1  
 jobs:
@@ -137,6 +145,7 @@ jobs:
     executor: aws-executor
     steps:
       - checkout
+      - install-dependencies      
       - run:
           name: Ensure back-end infrastructure exists
           command: |
