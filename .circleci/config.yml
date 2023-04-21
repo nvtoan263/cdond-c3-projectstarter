@@ -1,15 +1,15 @@
 version: 2.1
 executors:
-  build-executor:
+  node-executor:
     docker:
       - image: circleci/node:13.8.0
-  slack-executor:
+  node-latest-executor:
     docker:
       - image: circleci/node:latest
   aws-executor:
     docker:
       - image: amazon/aws-cli
-  ansible-executor:
+  python-executor:
     docker:
       - image: python:3.8      
 commands:
@@ -24,7 +24,7 @@ orbs:
   slack: circleci/slack@4.12.1  
 jobs:
   build-frontend:
-    executor: build-executor
+    executor: node-executor
     steps:
       - checkout
       - restore_cache:
@@ -45,7 +45,7 @@ jobs:
           paths:
             - output.txt
   build-backend:
-    executor: build-executor
+    executor: node-executor
     steps:
       - checkout
       - restore_cache:
@@ -60,7 +60,7 @@ jobs:
           paths: [backend/node_modules]
           key: backend-build
   test-frontend:
-    executor: build-executor
+    executor: node-executor
     steps:
       - checkout
       - restore_cache:
@@ -75,7 +75,7 @@ jobs:
           paths: [frontend/node_modules]
           key: test-frontend
   test-backend:
-    executor: build-executor
+    executor: node-executor
     steps:
       - checkout
       - restore_cache:
@@ -90,7 +90,7 @@ jobs:
           paths: [backend/node_modules]
           key: test-backend
   scan-frontend:
-    executor: build-executor
+    executor: node-executor
     steps:
       - checkout
       - restore_cache:
@@ -107,7 +107,7 @@ jobs:
           paths: [frontend/node_modules]
           key: scan-frontend     
   scan-backend:
-    executor: build-executor
+    executor: node-executor
     steps:
       - checkout
       - restore_cache:
@@ -124,7 +124,7 @@ jobs:
           paths: [backend/node_modules]
           key: scan-backend
   notify:
-    executor: slack-executor
+    executor: node-latest-executor
     steps:
       - attach_workspace:
           at: /tmp/frontend-workspace
@@ -186,7 +186,7 @@ jobs:
             - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure
   configure-infrastructure:
-    executor: ansible-executor
+    executor: python-executor
     steps:
       - checkout
       # Add the SSH key fingerprint to job so that Ansible will have access to the EC2 instance via SSH.
@@ -229,3 +229,4 @@ workflows:
           requires:
           -  build-frontend
       - deploy-infrastructure
+      - configure-infrastructure
