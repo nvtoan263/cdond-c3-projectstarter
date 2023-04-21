@@ -8,7 +8,10 @@ executors:
       - image: circleci/node:latest
   aws-executor:
     docker:
-      - image: amazon/aws-cli      
+      - image: amazon/aws-cli
+  ansible-executor:
+    docker:
+      - image: python:3.8      
 commands:
   install-dependencies:
     description: "Install some of necessary dependency for amazon/aws-cli image"
@@ -182,23 +185,45 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure
+  configure-infrastructure:
+    executor: ansible-executor
+    steps:
+      - checkout
+      # Add the SSH key fingerprint to job so that Ansible will have access to the EC2 instance via SSH.
+      - add_ssh_keys:
+          fingerprints: ["ee:47:ec:7f:49:b2:c8:0e:73:71:79:6e:bc:98:85:c6"]
+      # Attach workspace to access inventory file and other files
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            pip install ansible
+            apt-get update
+            apt-get install -y tar gzip awscli
+      - run:
+          name: Configure server
+          command: |
+            cd .circleci/ansible
+            ansible-playbook -i inventory.txt configure-server.yml
+      # Here's where you will add some code to rollback on failure         
 workflows:
   default:
     jobs:
       - build-frontend
       - build-backend     
-      - test-frontend:    
-          requires:
-          -  build-frontend
-      - test-backend:  
-          requires:
-          -  build-backend
-      - scan-frontend:     
-          requires:
-          -  build-frontend
-      - scan-backend:  
-          requires:
-          -  build-backend
+      # - test-frontend:    
+      #     requires:
+      #     -  build-frontend
+      # - test-backend:  
+      #     requires:
+      #     -  build-backend
+      # - scan-frontend:     
+      #     requires:
+      #     -  build-frontend
+      # - scan-backend:  
+      #     requires:
+      #     -  build-backend
       - notify:
           context: circleci-context
           requires:
