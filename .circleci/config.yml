@@ -166,7 +166,7 @@ jobs:
           name: Add back-end ip to ansible inventory
           command: |
             # Wait for the instance to start running
-            aws ec2 wait instance-running --filters "Name=tag:Name,Values=my-instance"
+            aws ec2 wait instance-running --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}"
             
             # Get the public IP address of the instance
             # backend-${ID} is the Name's value of created EC2. Refer to backend.yml
