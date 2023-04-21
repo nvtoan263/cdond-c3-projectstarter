@@ -176,7 +176,7 @@ jobs:
               --output text)
             
             # write ec2's ipaddress to inventory file
-            echo $public_ip >> project/.circleci/ansible/inventory.txt
+            echo $public_ip >>  ~/project/.circleci/ansible/inventory.txt
       - persist_to_workspace:
           root: ~/
           paths:
