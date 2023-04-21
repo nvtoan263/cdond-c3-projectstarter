@@ -176,11 +176,11 @@ jobs:
               --output text)
             
             # write ec2's ipaddress to inventory file
-            echo $public_ip >> cdond-c3-projectstarter/.circleci/ansible/inventory.txt
+            echo $public_ip >> project/.circleci/ansible/inventory.txt
       - persist_to_workspace:
           root: ~/
           paths:
-            - cdond-c3-projectstarter/.circleci/ansible/inventory.txt
+            - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure
 workflows:
   default:
