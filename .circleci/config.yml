@@ -52,6 +52,22 @@ commands:
           when: on_fail
           command: |
             aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.workflowID >>
+  create-dotenv-file:
+    description: Create .env file
+    steps:
+      - run:
+          name: Add env vars to .env file
+          command: |
+            echo ENVIRONMENT=$ENVIRONMENT > "./backend/.env"
+            echo TYPEORM_CONNECTION=$TYPEORM_CONNECTION >> "./backend/.env"
+            echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> "./backend/.env"
+            echo TYPEORM_ENTITIES=$TYPEORM_ENTITIES >> "./backend/.env"
+            echo TYPEORM_MIGRATIONS=$TYPEORM_MIGRATIONS >> "./backend/.env"
+            echo TYPEORM_HOST=$TYPEORM_HOST >> "./backend/.env"
+            echo TYPEORM_PORT=$TYPEORM_PORT >> "./backend/.env"
+            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "./backend/.env"
+            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "./backend/.env"
+            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "./backend/.env"
 orbs:
   slack: circleci/slack@4.12.1  
 jobs:
@@ -255,6 +271,7 @@ jobs:
           name: Update general packages
           command: |
             sudo apt-get update && sudo apt-get install -yy less
+      - create-dotenv-file
       - run:
           name: Run migrations
           command: |
@@ -317,6 +334,7 @@ jobs:
       - attach_workspace:
           at: ~/
       - install-python-executor-dependencies
+      - create-dotenv-file
       - run:
           name: Copy inventory file from shared workspace to newly clone code
           command: |
