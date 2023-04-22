@@ -222,7 +222,7 @@ jobs:
             ansible-playbook -i inventory.txt configure-server.yml
       # Here's where you will add some code to rollback on failure         
   run-migrations:
-    excutor: node-excutor
+    executor: node-executor
     steps:
       - checkout
       - run:
