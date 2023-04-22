@@ -21,8 +21,6 @@ commands:
       - run: yum install -y tar
       - run: yum install -y gzip
       - run: yum install -y python3
-      - run: yum install -y nodejs
-      - run: yum install -y npm
       - run: yum update -y awscli
   install-python-executor-dependencies:
     description: "Install some of necessary dependency for python:13.8.0 image"
@@ -242,7 +240,13 @@ jobs:
     executor: aws-executor
     steps:
       - checkout
-      - install-aws-executor-dependencies      
+      - install-aws-executor-dependencies
+      - run:
+          name: Install Node.js and npm
+          command: |
+            curl -sL https://deb.nodesource.com/setup_14.x | sudo bash -
+            sudo apt-get install -y nodejs
+
       - run:
           name: Get backend url
           command: |
