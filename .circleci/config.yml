@@ -21,7 +21,6 @@ commands:
       - run: yum install -y tar
       - run: yum install -y gzip
       - run: yum install -y python3
-      - run: yum install -y ansible
       - run: yum install -y nodejs
       - run: yum install -y npm
       - run: yum update -y awscli
