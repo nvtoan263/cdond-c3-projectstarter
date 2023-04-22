@@ -252,14 +252,9 @@ jobs:
             sudo apt-get update && sudo apt-get install -y python3-pip
             sudo pip3 install awscli
       - run:
-          name: Update Node.js
+          name: Update general packages
           command: |
-            curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
-            sudo apt-get install -y nodejs
-      - run:
-          name: Update npm
-          command: |
-            sudo npm install -g npm
+            sudo apt-get update && sudo apt-get install -yy less
       - run:
           name: Run migrations
           command: |
