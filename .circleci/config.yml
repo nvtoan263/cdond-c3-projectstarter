@@ -234,7 +234,6 @@ jobs:
             - project/.circleci/ansible/inventory.txt
       - destroy-environment:
           workflowID: ${CIRCLE_WORKFLOW_ID:0:7}   
-      # Here's where you will add some code to rollback on failure
   configure-infrastructure:
     executor: python-executor
     steps:
@@ -262,12 +261,12 @@ jobs:
     executor: node-executor
     steps:
       - checkout
-      - run:
-          name: Install AWS CLI
-          command: |
-            sudo apt-get update && sudo apt-get install -y python3-pip
-            sudo pip3 install awscli
-      - create-dotenv-file
+      # - run:
+      #     name: Install AWS CLI
+      #     command: |
+      #       sudo apt-get update && sudo apt-get install -y python3-pip
+      #       sudo pip3 install awscli
+      # - create-dotenv-file
       - run:
           name: Run migrations
           command: |
