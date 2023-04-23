@@ -33,6 +33,7 @@ commands:
       - run: apt-get install -y tar
       - run: apt-get install -y gzip
       - run: apt-get install -y awscli
+      - run: apt-get install -y npm
   destroy-environment:
     description: Destroy backend and frontend cloudformation stacks given a workflow ID.
     parameters:
@@ -68,7 +69,25 @@ commands:
             else
               echo "stack already deleted or not available"
             fi
-            
+  revert-migrations:
+    description: Revert the last migration if successfully run in the current workflow.
+    parameters:
+      workflowID:
+        type: string
+    steps:
+      - run:
+          name: Revert migrations
+          when: on_fail
+          command: |
+            # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
+            SUCCESS=$(curl --request GET --insecure https://kvdb.io/UFkymjGsJvx2GqaNaLpnRo/migration_<< parameters.workflowID >>)
+            echo "The value of SUCCESS is: ${SUCCESS}"
+            if(( $SUCCESS==1 )); 
+            then
+              cd ~/project/backend
+              npm install
+              npm run migrations:revert
+            fi            
   create-dotenv-file:
     description: Create .env file
     steps:
@@ -275,8 +294,7 @@ jobs:
             ansible-playbook -i inventory.txt configure-server.yml
       # Here's where you will add some code to rollback on failure         
   run-migrations:
-    docker:
-      - image: circleci/node:13.8.0
+    executor: node-executor
     steps:
       - checkout
       - run:
@@ -319,7 +337,9 @@ jobs:
               curl https://kvdb.io/UFkymjGsJvx2GqaNaLpnRo/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
             fi
       - destroy-environment:
-          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}   
+          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations:
+          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
   deploy-frontend:
     executor: aws-executor
     steps:
