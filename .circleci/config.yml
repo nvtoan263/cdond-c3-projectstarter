@@ -21,6 +21,9 @@ commands:
       - run: yum install -y tar
       - run: yum install -y gzip
       - run: yum install -y python3
+      - run: yum install -y gcc-c++ make
+      - run: curl -sL https://rpm.nodesource.com/setup_13.x | bash -
+      - run: yum install -y nodejs
       - run: yum update -y awscli
   install-python-executor-dependencies:
     description: "Install some of necessary dependency for python:13.8.0 image"
@@ -44,14 +47,28 @@ commands:
           name: Destroy backend stack
           when: on_fail
           command: |
-            aws s3 rm s3://udapeople-<< parameters.workflowID >> --recursive
-            aws s3 rb s3://udapeople-<< parameters.workflowID >> --force
-            aws cloudformation delete-stack --stack-name udapeople-backend-<< parameters.workflowID >>
+            if aws s3 head-bucket --bucket udapeople-<< parameters.workflowID >>; then
+              aws s3 rm s3://udapeople-<< parameters.workflowID >> --recursive
+              aws s3 rb s3://udapeople-<< parameters.workflowID >> --force
+            else
+              echo "bucket already deleted or not available"
+            fi
+            
+            if aws cloudformation describe-stacks --stack-name udapeople-backend-<< parameters.workflowID >>; then
+              aws cloudformation delete-stack --stack-name udapeople-backend-<< parameters.workflowID >>
+            else
+              echo "stack already deleted or not available"
+            fi 
       - run:
           name: Destroy frontend stack
           when: on_fail
           command: |
-            aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.workflowID >>
+            if aws cloudformation describe-stacks --stack-name udapeople-frontend-<< parameters.workflowID >>; then
+              aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.workflowID >>
+            else
+              echo "stack already deleted or not available"
+            fi
+            
   create-dotenv-file:
     description: Create .env file
     steps:
@@ -298,6 +315,7 @@ jobs:
           command: |
             if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
             then
+              curl "https://kvdb.io/UFkymjGsJvx2GqaNaLpnRo/migration_${CIRCLE_WORKFLOW_ID:0:7}"  -d '1'
               curl https://kvdb.io/UFkymjGsJvx2GqaNaLpnRo/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
             fi
       - destroy-environment:
@@ -307,12 +325,6 @@ jobs:
     steps:
       - checkout
       - install-aws-executor-dependencies
-      - run:
-          name: Install Node.js and npm
-          command: |
-            curl -sL https://deb.nodesource.com/setup_14.x | sudo bash -
-            sudo apt-get install -y nodejs
-
       - run:
           name: Get backend url
           command: |
