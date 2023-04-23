@@ -258,15 +258,17 @@ jobs:
             ansible-playbook -i inventory.txt configure-server.yml
       # Here's where you will add some code to rollback on failure         
   run-migrations:
-    executor: node-executor
+    docker:
+      - image: circleci/node:13.8.0
     steps:
       - checkout
-      # - run:
-      #     name: Install AWS CLI
-      #     command: |
-      #       sudo apt-get update && sudo apt-get install -y python3-pip
-      #       sudo pip3 install awscli
-      # - create-dotenv-file
+      - run:
+          name: Install AWS CLI dependencies
+          command: |
+            sudo apt-get update && sudo apt-get install -yy less
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
       - run:
           name: Run migrations
           command: |
@@ -354,22 +356,22 @@ workflows:
     jobs:
       - build-frontend
       - build-backend     
-      # - test-frontend:    
-      #     requires:
-      #     -  build-frontend
-      # - test-backend:  
-      #     requires:
-      #     -  build-backend
-      # - scan-frontend:     
-      #     requires:
-      #     -  build-frontend
-      # - scan-backend:  
-      #     requires:
-      #     -  build-backend
-      # - notify:
-      #     context: circleci-context
-      #     requires:
-      #     -  build-frontend
+      - test-frontend:    
+          requires:
+          -  build-frontend
+      - test-backend:  
+          requires:
+          -  build-backend
+      - scan-frontend:     
+          requires:
+          -  build-frontend
+      - scan-backend:  
+          requires:
+          -  build-backend
+      - notify:
+          context: circleci-context
+          requires:
+          -  build-frontend
       - deploy-infrastructure
       - configure-infrastructure:
           requires:
