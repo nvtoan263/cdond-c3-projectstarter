@@ -270,13 +270,31 @@ jobs:
             unzip awscliv2.zip
             sudo ./aws/install
       - run:
+          name: Check environment variables
+          command: |
+            pwd
+            ls -l
+            npm install
+            echo ${AWS_DEFAULT_REGION} > temp.txt
+            echo ${TYPEORM_CONNECTION} >> temp.txt
+            echo ${TYPEORM_DATABASE} >> temp.txt
+            echo ${TYPEORM_ENTITIES} >> temp.txt
+            echo ${TYPEORM_HOST} >> temp.txt
+            echo ${TYPEORM_MIGRATIONS} >> temp.txt
+            echo ${TYPEORM_MIGRATIONS_DIR} >> temp.txt
+            echo ${TYPEORM_PASSWORD} >> temp.txt
+            echo ${TYPEORM_PORT} >> temp.txt
+            echo ${TYPEORM_USERNAME} >> temp.txt
+            cat temp.txt      
+      - run:
           name: Run migrations
           command: |
             cd backend
             npm install
+            npm audit fix
+            npm audit fix --audit-level=critical --force
+            npm audit --audit-level=critical
             npm run migrations > migrations_dump.txt
-            pwd
-            ls -l
             cat migrations_dump.txt
       - run:
           name: Send migration results to kvdb.io
