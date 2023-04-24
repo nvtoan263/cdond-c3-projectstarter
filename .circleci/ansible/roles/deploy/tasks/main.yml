@@ -13,11 +13,18 @@
     production: yes
     state: present
 
+- name: Create folder
+  become: true
+  file:
+    path: /home/app
+    state: directory
+    mode: 0755
+
 - name: Copy tarball to remote host
   become: true
   copy:
     src: "~/project/artifact.tar.gz"
-    dest: "/home/app"
+    dest: /home/app
 #    mode: '0644'
 
 - name: Extract artifact

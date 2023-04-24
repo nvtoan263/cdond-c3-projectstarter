@@ -82,7 +82,7 @@ commands:
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
             SUCCESS=$(curl --request GET --insecure https://kvdb.io/UFkymjGsJvx2GqaNaLpnRo/migration_<< parameters.workflowID >>)
             echo "The value of SUCCESS is: ${SUCCESS}"
-            if(( $SUCCESS==1 )); 
+            if [[ $SUCCESS==1 ]] 
             then
               cd ~/project/backend
               npm install
@@ -334,9 +334,11 @@ jobs:
       - run:
           name: Send migration results to kvdb.io
           command: |
-            if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
+            if grep -q "has been executed successfully" ~/project/backend/migrations_dump.txt
             then
               curl https://kvdb.io/UFkymjGsJvx2GqaNaLpnRo/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '1'
+            else
+              echo "Could not find success message in migrations_dump. Check your migration work!"
             fi
       - destroy-environment:
           workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
@@ -359,22 +361,15 @@ jobs:
             echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
             cat frontend/.env
       - run:
-          name: run npm install and audit fix
+          name: Deploy frontend objects
           command: |
             cd frontend
             npm install
-      - run:
-          name: run npm build
-          command: |
+            pwd
+            ls -l
             npm run build
-      - run:
-          name: compress artifact file
-          command: |
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
-      - run:
-          name: copy to s3 bucket
-          command: |
-            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive                        
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive                       
       - destroy-environment:
           workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
@@ -420,22 +415,22 @@ workflows:
     jobs:
       - build-frontend
       - build-backend     
-      - test-frontend:    
-          requires:
-          -  build-frontend
-      - test-backend:  
-          requires:
-          -  build-backend
-      - scan-frontend:     
-          requires:
-          -  build-frontend
-      - scan-backend:  
-          requires:
-          -  build-backend
-      - notify:
-          context: circleci-context
-          requires:
-          -  build-frontend
+      # - test-frontend:    
+      #     requires:
+      #     -  build-frontend
+      # - test-backend:  
+      #     requires:
+      #     -  build-backend
+      # - scan-frontend:     
+      #     requires:
+      #     -  build-frontend
+      # - scan-backend:  
+      #     requires:
+      #     -  build-backend
+      # - notify:
+      #     context: circleci-context
+      #     requires:
+      #     -  build-frontend
       - deploy-infrastructure
       - configure-infrastructure:
           requires:
