@@ -48,6 +48,7 @@ commands:
           name: Destroy backend stack
           when: on_fail
           command: |
+            exit 0
             if aws s3api head-bucket --bucket udapeople-<< parameters.workflowID >>; then
               aws s3 rm s3://udapeople-<< parameters.workflowID >> --recursive
               aws s3 rb s3://udapeople-<< parameters.workflowID >> --force
@@ -64,6 +65,7 @@ commands:
           name: Destroy frontend stack
           when: on_fail
           command: |
+            exit 0
             if aws cloudformation describe-stacks --stack-name udapeople-frontend-<< parameters.workflowID >>; then
               aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.workflowID >>
             else
@@ -79,6 +81,7 @@ commands:
           name: Revert migrations
           when: on_fail
           command: |
+            exit 0
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
             SUCCESS=$(curl --request GET --insecure https://kvdb.io/UFkymjGsJvx2GqaNaLpnRo/migration_<< parameters.workflowID >>)
             echo "The value of SUCCESS is: ${SUCCESS}"
@@ -432,14 +435,29 @@ jobs:
             echo ${URL} 
             if curl -s ${URL} | grep "Welcome"
             then
-              exit 1
+              exit 0
             else
               exit 1
             fi
       - destroy-environment:
           workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
-          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}  
+          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
+  cloudfront-update:
+    executor: aws-executor
+    steps:
+      - checkout
+      - install-aws-executor-dependencies
+      - run:
+          name: Update cloudfront distribution
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/cloudfront.yml \
+              --stack-name InitialStack \
+              --parameter-overrides WorkflowID="udapeople-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --tags project=udapeople 
+      - destroy-environment
+      - revert-migrations
 workflows:
   default:
     jobs:
