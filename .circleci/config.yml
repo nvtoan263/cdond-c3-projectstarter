@@ -336,7 +336,7 @@ jobs:
           command: |
             if grep -q "has been executed successfully" ~/project/backend/migrations_dump.txt
             then
-              curl https://kvdb.io/UFkymjGsJvx2GqaNaLpnRo/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '1'
+              curl -k https://kvdb.io/UFkymjGsJvx2GqaNaLpnRo/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '1'
             else
               echo "Could not find success message in migrations_dump. Check your migration work!"
             fi
@@ -405,11 +405,41 @@ jobs:
           workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
           workflowID: ${CIRCLE_WORKFLOW_ID:0:7}    
-  test-interpolate-workflowid:
-    executor: node-executor
+  smoke-test:
+    executor: python-executor
     steps:
-      - run: |
-          curl -k https://kvdb.io/UFkymjGsJvx2GqaNaLpnRo/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '1'
+      - checkout
+      - install-python-executor-dependencies
+      - run:
+          name: Smoke test backend - get and curl url
+          command: |
+            export BACKEND_IP=$(aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --query 'Reservations[0].Instances[0].PublicIpAddress' \
+              --output text)
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "API_URL = ${API_URL}"
+            if curl "${API_URL}/api/status" | grep "ok"
+            then
+              return 0
+            else
+              return 1
+            fi
+      -run:
+        name: Smoke test frontend
+        command: |
+          URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/#/employees"
+          echo ${URL} 
+          if curl -s ${URL} | grep "Welcome"
+          then
+            return 1
+          else
+            return 1
+          fi
+      - destroy-environment:
+          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations:
+          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}  
 workflows:
   default:
     jobs:
