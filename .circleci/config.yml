@@ -411,7 +411,7 @@ jobs:
       - checkout
       - install-python-executor-dependencies
       - run:
-          name: Smoke test backend - get and curl url
+          name: Smoke test backend - get and curl backend api
           command: |
             export BACKEND_IP=$(aws ec2 describe-instances \
               --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
@@ -421,9 +421,9 @@ jobs:
             echo "API_URL = ${API_URL}"
             if curl "${API_URL}/api/status" | grep "ok"
             then
-              return 0
+              exit 0
             else
-              return 1
+              exit 1
             fi
       - run:
           name: Smoke test frontend
@@ -432,9 +432,9 @@ jobs:
             echo ${URL} 
             if curl -s ${URL} | grep "Welcome"
             then
-              return 1
+              exit 1
             else
-              return 1
+              exit 1
             fi
       - destroy-environment:
           workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
