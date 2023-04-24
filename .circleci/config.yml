@@ -360,16 +360,25 @@ jobs:
             echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
             cat frontend/.env
       - run:
-          name: Deploy frontend objects
+          name: run npm install and audit fix
           command: |
             cd frontend
             npm install
             npm audit fix
             npm audit fix --audit-level=critical --force
             npm audit --audit-level=critical
+      - run:
+          name: run npm build
+          command: |
             npm run build
+      - run:
+          name: compress artifact file
+          command: |
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
-            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive            
+      - run:
+          name: copy to s3 bucket
+          command: |
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive                        
       - destroy-environment:
           workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
@@ -409,30 +418,30 @@ workflows:
   default:
     jobs:
       - build-frontend
-      # - build-backend     
-      # - test-frontend:    
-      #     requires:
-      #     -  build-frontend
-      # - test-backend:  
-      #     requires:
-      #     -  build-backend
-      # - scan-frontend:     
-      #     requires:
-      #     -  build-frontend
-      # - scan-backend:  
-      #     requires:
-      #     -  build-backend
-      # - notify:
-      #     context: circleci-context
-      #     requires:
-      #     -  build-frontend
-      # - deploy-infrastructure
-      # - configure-infrastructure:
-      #     requires:
-      #     - deploy-infrastructure
-      # - run-migrations:
-      #     requires: [configure-infrastructure]
-      # - deploy-frontend:
-      #     requires: [run-migrations]
-      # - deploy-backend:
-      #     requires: [run-migrations]
+      - build-backend     
+      - test-frontend:    
+          requires:
+          -  build-frontend
+      - test-backend:  
+          requires:
+          -  build-backend
+      - scan-frontend:     
+          requires:
+          -  build-frontend
+      - scan-backend:  
+          requires:
+          -  build-backend
+      - notify:
+          context: circleci-context
+          requires:
+          -  build-frontend
+      - deploy-infrastructure
+      - configure-infrastructure:
+          requires:
+          - deploy-infrastructure
+      - run-migrations:
+          requires: [configure-infrastructure]
+      - deploy-frontend:
+          requires: [run-migrations]
+      - deploy-backend:
+          requires: [run-migrations]
