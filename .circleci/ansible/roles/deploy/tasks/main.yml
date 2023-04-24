@@ -15,21 +15,15 @@
 
 - name: Copy tarball to remote host
   copy:
-    src: "{{ tarball_name }}"
-    dest: "{{ tarball_name }}"
-    mode: '0644'
+    src: "~/project/artifact.tar.gz"
+    dest: "/home/app"
+#    mode: '0644'
 
-# - name: Ensure destination directory exists
-#   file:
-#     path: "{{ dest_dir }}"
-#     state: directory
-#     mode: '0755'
-- name: Extract tarball
-  unarchive:
-    src: "{{ tarball_name }}"
-    dest: "{{ dest_dir }}"
-    remote_src: yes
-    extra_opts: [--strip-components=1]
+- name: Extract artifact
+  become: true
+  shell: |
+    cd /home/app
+    tar -xvzf artifact.tar.gz
 
 - name: Install and start application
   shell: |

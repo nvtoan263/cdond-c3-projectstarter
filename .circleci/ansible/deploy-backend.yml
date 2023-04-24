@@ -9,6 +9,6 @@
     - ansible_host_key_checking: false
     - ansible_stdout_callback: yaml
     - tarball_name: artifact.tar.gz
-    - dest_dir: ~/
+    - dest_dir: /home/app
   roles:
     - deploy

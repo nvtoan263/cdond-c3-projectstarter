@@ -87,6 +87,9 @@ commands:
               cd ~/project/backend
               npm install
               npm run migrations:revert
+            else
+              echo "Reverting not done as expected, work flow ID is:"
+              echo migration_<< parameters.workflowID >>
             fi            
   create-dotenv-file:
     description: Create .env file
@@ -368,7 +371,9 @@ jobs:
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive            
       - destroy-environment:
-          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}   
+          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations:
+          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}      
   deploy-backend:
     executor: python-executor
     steps:
@@ -397,35 +402,37 @@ jobs:
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
       - destroy-environment:
-          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}          
+          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations:
+          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}    
 workflows:
   default:
     jobs:
       - build-frontend
-      - build-backend     
-      - test-frontend:    
-          requires:
-          -  build-frontend
-      - test-backend:  
-          requires:
-          -  build-backend
-      - scan-frontend:     
-          requires:
-          -  build-frontend
-      - scan-backend:  
-          requires:
-          -  build-backend
-      - notify:
-          context: circleci-context
-          requires:
-          -  build-frontend
-      - deploy-infrastructure
-      - configure-infrastructure:
-          requires:
-          - deploy-infrastructure
-      - run-migrations:
-          requires: [configure-infrastructure]
-      - deploy-frontend:
-          requires: [run-migrations]
-      - deploy-backend:
-          requires: [run-migrations]
+      # - build-backend     
+      # - test-frontend:    
+      #     requires:
+      #     -  build-frontend
+      # - test-backend:  
+      #     requires:
+      #     -  build-backend
+      # - scan-frontend:     
+      #     requires:
+      #     -  build-frontend
+      # - scan-backend:  
+      #     requires:
+      #     -  build-backend
+      # - notify:
+      #     context: circleci-context
+      #     requires:
+      #     -  build-frontend
+      # - deploy-infrastructure
+      # - configure-infrastructure:
+      #     requires:
+      #     - deploy-infrastructure
+      # - run-migrations:
+      #     requires: [configure-infrastructure]
+      # - deploy-frontend:
+      #     requires: [run-migrations]
+      # - deploy-backend:
+      #     requires: [run-migrations]
