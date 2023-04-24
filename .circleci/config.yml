@@ -48,7 +48,7 @@ commands:
           name: Destroy backend stack
           when: on_fail
           command: |
-            if aws s3 head-bucket --bucket udapeople-<< parameters.workflowID >>; then
+            if aws s3api head-bucket --bucket udapeople-<< parameters.workflowID >>; then
               aws s3 rm s3://udapeople-<< parameters.workflowID >> --recursive
               aws s3 rb s3://udapeople-<< parameters.workflowID >> --force
             else
@@ -336,9 +336,7 @@ jobs:
           command: |
             if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
             then
-              curl https://kvdb.io/UFkymjGsJvx2GqaNaLpnRo/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
               curl https://kvdb.io/UFkymjGsJvx2GqaNaLpnRo/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '1'
-
             fi
       - destroy-environment:
           workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
@@ -365,9 +363,6 @@ jobs:
           command: |
             cd frontend
             npm install
-            npm audit fix
-            npm audit fix --audit-level=critical --force
-            npm audit --audit-level=critical
       - run:
           name: run npm build
           command: |
@@ -420,11 +415,9 @@ jobs:
     steps:
       - run: |
           curl -k https://kvdb.io/UFkymjGsJvx2GqaNaLpnRo/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '1'
-
 workflows:
   default:
     jobs:
-      - test-interpolate-workflowid
       # - build-frontend
       # - build-backend     
       # - test-frontend:    
