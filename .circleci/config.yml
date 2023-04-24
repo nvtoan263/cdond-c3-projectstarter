@@ -48,7 +48,6 @@ commands:
           name: Destroy backend stack
           when: on_fail
           command: |
-            exit 0
             if aws s3api head-bucket --bucket udapeople-<< parameters.workflowID >>; then
               aws s3 rm s3://udapeople-<< parameters.workflowID >> --recursive
               aws s3 rb s3://udapeople-<< parameters.workflowID >> --force
@@ -65,7 +64,6 @@ commands:
           name: Destroy frontend stack
           when: on_fail
           command: |
-            exit 0
             if aws cloudformation describe-stacks --stack-name udapeople-frontend-<< parameters.workflowID >>; then
               aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.workflowID >>
             else
@@ -81,7 +79,6 @@ commands:
           name: Revert migrations
           when: on_fail
           command: |
-            exit 0
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
             SUCCESS=$(curl --request GET --insecure https://kvdb.io/UFkymjGsJvx2GqaNaLpnRo/migration_<< parameters.workflowID >>)
             echo "The value of SUCCESS is: ${SUCCESS}"
@@ -436,7 +433,7 @@ jobs:
             echo ${URL} 
             if curl -s ${URL} | grep "Welcome"
             then
-              exit 0
+              exit 1
             else
               exit 1
             fi
