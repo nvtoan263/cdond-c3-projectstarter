@@ -415,9 +415,16 @@ jobs:
           workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
           workflowID: ${CIRCLE_WORKFLOW_ID:0:7}    
+  test-interpolate-workflowid:
+    executor: node-executor
+    steps:
+      - run: |
+          curl https://kvdb.io/UFkymjGsJvx2GqaNaLpnRo/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '1'
+
 workflows:
   default:
     jobs:
+      - test-interpolate-workflowid
       # - build-frontend
       # - build-backend     
       # - test-frontend:    
