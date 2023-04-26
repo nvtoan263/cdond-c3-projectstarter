@@ -502,7 +502,7 @@ jobs:
       - run: 
           name: test get stack list
           command: |
-            aws cloudformation list-stacks --query 'StackSummaries[?contains(StackName, '${CIRCLE_WORKFLOW_ID:0:7}') == `false` && StackStatus == `CREATE_COMPLETE`].StackName' --no-paginate --output text
+            aws cloudformation list-stacks --query 'StackSummaries[?contains(StackName, '\"${CIRCLE_WORKFLOW_ID:0:7}\"') == `false` && StackStatus == `CREATE_COMPLETE`].StackName' --no-paginate --output text
 
 workflows:
   default:
