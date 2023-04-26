@@ -466,8 +466,9 @@ jobs:
         - run:
             name: Delete S3 buckets
             command: |
+              CurrentWorkflowID=${CIRCLE_WORKFLOW_ID:0:7}
               # List all S3 buckets and filter by name
-              for bucket in $(aws s3api list-buckets --query 'Buckets[?contains(Name, `'"${CIRCLE_WORKFLOW_ID:0:7}"'`) == `false`].Name'  --no-paginate --output text); do
+              for bucket in $(aws s3api list-buckets --query 'Buckets[?contains(Name, "$CurrentWorkflowID") == `false`].Name'  --no-paginate --output text); do
                 # Empty the bucket
                 aws s3 rm s3://$bucket --recursive
                 # Delete the bucket
@@ -478,8 +479,9 @@ jobs:
         - run:
             name: Delete CloudFormation stacks
             command: |
+              CurrentWorkflowID=${CIRCLE_WORKFLOW_ID:0:7}
               # List all CloudFormation stacks and filter by name
-              for stack in $(aws cloudformation list-stacks --query 'StackSummaries[?contains(StackName, `'"${CIRCLE_WORKFLOW_ID:0:7}"'`) == `false` && StackStatus == `CREATE_COMPLETE`].StackName' --no-paginate --output text); do
+              for stack in $(aws cloudformation list-stacks --query 'StackSummaries[?contains(StackName, "$CurrentWorkflowID") == `false` && StackStatus == `CREATE_COMPLETE`].StackName' --no-paginate --output text); do
                 # Delete the stack
                 aws cloudformation delete-stack --stack-name $stack
                 # Wait for the stack to be deleted
