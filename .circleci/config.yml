@@ -468,8 +468,8 @@ jobs:
             command: |
               echo "List all S3 buckets and filter by name"
               echo ${CIRCLE_WORKFLOW_ID:0:7}
-              aws s3api list-buckets --query 'Buckets[?contains(Name, '\"${CIRCLE_WORKFLOW_ID:0:7}\"') == `false`].Name'  --no-paginate --output text
-              for bucket in $(aws s3api list-buckets --query 'Buckets[?contains(Name, '\"${CIRCLE_WORKFLOW_ID:0:7}\"') == `false`].Name'  --no-paginate --output text); do
+              aws s3api list-buckets --query "Buckets[?contains(Name, '${CIRCLE_WORKFLOW_ID:0:7}') == \`false\`].Name" --no-paginate --output text
+              for bucket in $(aws s3api list-buckets --query "Buckets[?contains(Name, '${CIRCLE_WORKFLOW_ID:0:7}') == \`false\`].Name" --no-paginate --output text); do
                 # Empty the bucket
                 aws s3 rm s3://$bucket --recursive
                 # Delete the bucket
@@ -495,7 +495,14 @@ jobs:
     steps:
       - checkout
       - install-aws-executor-dependencies
-      - run: aws s3api list-buckets --query "Buckets[?contains(Name, '${CIRCLE_WORKFLOW_ID:0:7}') == \`false\`].Name" --no-paginate --output text
+      - run: 
+        name: test get s3 list
+        command: |
+          aws s3api list-buckets --query "Buckets[?contains(Name, '${CIRCLE_WORKFLOW_ID:0:7}') == \`false\`].Name" --no-paginate --output text
+      - run: 
+        name: test get stack list
+        command: |
+          aws cloudformation list-stacks --query 'StackSummaries[?contains(StackName, '${CIRCLE_WORKFLOW_ID:0:7}') == \`false\` && StackStatus == `CREATE_COMPLETE`].StackName' --no-paginate --output text
 
 workflows:
   default:
