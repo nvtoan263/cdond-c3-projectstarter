@@ -467,6 +467,7 @@ jobs:
             name: Delete S3 buckets
             command: |
               # List all S3 buckets and filter by name
+              echo ${CIRCLE_WORKFLOW_ID:0:7}
               for bucket in $(aws s3api list-buckets --query 'Buckets[?contains(Name, `${CIRCLE_WORKFLOW_ID:0:7}`) == `false`].Name'  --no-paginate --output text); do
                 # Empty the bucket
                 aws s3 rm s3://$bucket --recursive
