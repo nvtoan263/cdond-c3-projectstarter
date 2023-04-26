@@ -464,28 +464,28 @@ jobs:
         - checkout
         - install-aws-executor-dependencies
         - run:
-            name: Get old stack workflow id
+            name: Delete S3 buckets
             command: |
-              export OldWorkflowID=$(aws cloudformation \
-                list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
-                --no-paginate --output text)
-              echo OldWorkflowID: "${OldWorkflowID}"
-              echo CIRCLE_WORKFLOW_ID "${CIRCLE_WORKFLOW_ID:0:7}"
-              # Fetch the stack names
-              export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
-                --stack-status-filter CREATE_COMPLETE --no-paginate --output text))
-              echo Stack names: "${STACKS[@]}"
+              # List all S3 buckets and filter by name
+              for bucket in $(aws s3api list-buckets --query 'Buckets[?contains(Name, ${CIRCLE_WORKFLOW_ID:0:7}) == `false`].Name'  --no-paginate --output text); do
+                # Empty the bucket
+                aws s3 rm s3://$bucket --recursive
+                # Delete the bucket
+                aws s3api delete-bucket --bucket $bucket
+                echo "Deleted S3 bucket $bucket"
+              done
 
         - run:
-            name: Remove old stacks and files
+            name: Delete CloudFormation stacks
             command: |
-              echo ${OldWorkflowID}
-              if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
-              then
-                aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
-                aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
-                aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
-              fi
+              # List all CloudFormation stacks and filter by name
+              for stack in $(aws cloudformation list-stacks --query 'StackSummaries[?contains(StackName, ${CIRCLE_WORKFLOW_ID:0:7}) == `false` && StackStatus == `CREATE_COMPLETE`].StackName' --no-paginate --output text); do
+                # Delete the stack
+                aws cloudformation delete-stack --stack-name $stack
+                # Wait for the stack to be deleted
+                aws cloudformation wait stack-delete-complete --stack-name $stack
+                echo "Deleted CloudFormation stack $stack"
+              done
 
 workflows:
   default:
