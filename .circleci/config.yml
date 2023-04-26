@@ -494,7 +494,7 @@ jobs:
     executor: aws-executor
     steps:
       - checkout
-      - install-aws-executor-dependencies
+      #- install-aws-executor-dependencies
       - run: 
           name: test get s3 list
           command: |
