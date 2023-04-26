@@ -468,7 +468,6 @@ jobs:
             command: |
               echo "List all S3 buckets and filter by name"
               echo ${CIRCLE_WORKFLOW_ID:0:7}
-              aws s3api list-buckets --query "Buckets[?contains(Name, '${CIRCLE_WORKFLOW_ID:0:7}') == \`false\`].Name" --no-paginate --output text
               for bucket in $(aws s3api list-buckets --query "Buckets[?contains(Name, '${CIRCLE_WORKFLOW_ID:0:7}') == \`false\`].Name" --no-paginate --output text); do
                 # Empty the bucket
                 aws s3 rm s3://$bucket --recursive
@@ -482,8 +481,7 @@ jobs:
             command: |
               echo "List all CloudFormation stacks and filter by name"
               echo ${CIRCLE_WORKFLOW_ID:0:7}
-              aws cloudformation list-stacks --query 'StackSummaries[?contains(StackName, '\"${CIRCLE_WORKFLOW_ID:0:7}\"') == `false` && StackStatus == `CREATE_COMPLETE`].StackName' --no-paginate --output text
-              for stack in $(aws cloudformation list-stacks --query 'StackSummaries[?contains(StackName, '\"${CIRCLE_WORKFLOW_ID:0:7}\"') == `false` && StackStatus == `CREATE_COMPLETE`].StackName' --no-paginate --output text); do
+              for stack in $(aws cloudformation list-stacks --query "StackSummaries[?contains(StackName, '${CIRCLE_WORKFLOW_ID:0:7}') == \`false\` && StackStatus == \`CREATE_COMPLETE\`].StackName" --no-paginate --output text); do
                 # Delete the stack
                 aws cloudformation delete-stack --stack-name $stack
                 # Wait for the stack to be deleted
@@ -507,38 +505,38 @@ jobs:
 workflows:
   default:
     jobs:
-      - test
-      # - build-frontend
-      # - build-backend     
-      # - test-frontend:    
-      #     requires:
-      #     -  build-frontend
-      # - test-backend:  
-      #     requires:
-      #     -  build-backend
-      # - scan-frontend:     
-      #     requires:
-      #     -  build-frontend
-      # - scan-backend:  
-      #     requires:
-      #     -  build-backend
-      # - notify:
-      #     context: circleci-context
-      #     requires:
-      #     -  build-frontend
-      # - deploy-infrastructure
-      # - configure-infrastructure:
-      #     requires:
-      #     - deploy-infrastructure
-      # - run-migrations:
-      #     requires: [configure-infrastructure]
-      # - deploy-frontend:
-      #     requires: [run-migrations]
-      # - deploy-backend:
-      #     requires: [run-migrations]
-      # - smoke-test: 
-      #     requires: [deploy-backend, deploy-frontend]
-      # - cloudfront-update: 
-      #     requires: [smoke-test]
-      # - cleanup:
-      #     requires: [cloudfront-update]
+      #- test
+      - build-frontend
+      - build-backend     
+      - test-frontend:    
+          requires:
+          -  build-frontend
+      - test-backend:  
+          requires:
+          -  build-backend
+      - scan-frontend:     
+          requires:
+          -  build-frontend
+      - scan-backend:  
+          requires:
+          -  build-backend
+      - notify:
+          context: circleci-context
+          requires:
+          -  build-frontend
+      - deploy-infrastructure
+      - configure-infrastructure:
+          requires:
+          - deploy-infrastructure
+      - run-migrations:
+          requires: [configure-infrastructure]
+      - deploy-frontend:
+          requires: [run-migrations]
+      - deploy-backend:
+          requires: [run-migrations]
+      - smoke-test: 
+          requires: [deploy-backend, deploy-frontend]
+      - cloudfront-update: 
+          requires: [smoke-test]
+      - cleanup:
+          requires: [cloudfront-update]
