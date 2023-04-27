@@ -342,10 +342,11 @@ jobs:
             else
               echo "Could not find success message in migrations_dump. Check your migration work!"
             fi
+      - destroy-environment:
+          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}      
       - revert-migrations:
           workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
-      - destroy-environment:
-          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
+
 
   deploy-frontend:
     executor: aws-executor
@@ -373,9 +374,9 @@ jobs:
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive                       
-      - revert-migrations:
-          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
+          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}      
+      - revert-migrations:
           workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
     
   deploy-backend:
@@ -405,10 +406,11 @@ jobs:
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
+      - destroy-environment:
+          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}      
       - revert-migrations:
           workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
-      - destroy-environment:
-          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
+
    
   smoke-test:
     executor: python-executor
@@ -441,9 +443,9 @@ jobs:
             else
               exit 1
             fi
-      - revert-migrations:
-          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
+          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}      
+      - revert-migrations:
           workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
 
   cloudfront-update:
@@ -459,9 +461,9 @@ jobs:
               --stack-name InitialStack \
               --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople 
-      - revert-migrations:
-          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
+          workflowID: ${CIRCLE_WORKFLOW_ID:0:7}      
+      - revert-migrations:
           workflowID: ${CIRCLE_WORKFLOW_ID:0:7}
 
   cleanup:
