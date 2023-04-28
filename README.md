@@ -1,3 +1,22 @@
+# Udagram-ToanNV15
+Deploy application with CICD Approach
+
+# Result 1 - S3 Static Link to Application
+http://udapeople-1a79fab.s3-website-us-east-1.amazonaws.com/#/employees
+
+# Result 2 - Cloudfront distribution of Application
+http://d123j9fubxehpr.cloudfront.net/#/employees
+
+# Result 3 - Presentation
+https://github.com/nvtoan263/cdond-c3-projectstarter/blob/dev-repo/Presentation.pdf
+
+# Result 4 - Sreenshots
+https://github.com/nvtoan263/cdond-c3-projectstarter/tree/dev-repo/SREENSHORT-URL
+
+# Deploy Udapeople on AWS - Project requirement
+Udacity Cloud DevOps Engineer Nanodegree Program - Project 3
+<details>
+  <summary>Click here to see detail of projecr requirements and consideration</summary>
 We are archiving this repository because we do not want learners to push personal development to the current repository. If you have any issues or suggestions to make, feel free to:
 - Utilize the https://knowledge.udacity.com/ forum to seek help on content-specific issues.
 - [Submit a support ticket](https://udacity.zendesk.com/hc/en-us/requests/new) along with the link to your forked repository. 
