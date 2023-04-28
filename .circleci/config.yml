@@ -513,7 +513,6 @@ jobs:
 workflows:
   default:
     jobs:
-      #- test
       - build-frontend
       - build-backend     
       - test-frontend:    
